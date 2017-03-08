@@ -14,6 +14,8 @@ Collection of generative models, e.g. GAN, VAE in Tensorflow, Keras, and Pytorch
 2. Variational Autoencoder (VAE)
   1. [Vanilla VAE](https://arxiv.org/abs/1312.6114)
   2. [Conditional VAE](https://arxiv.org/abs/1406.5298)
+3. Generative Adversarial Nets and Variational Autoencoder
+  1.[VAE-GAN](https://arxiv.org/pdf/1512.09300.pdf)
 
 ## Dependencies
 
