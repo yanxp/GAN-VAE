@@ -23,7 +23,7 @@ D_b2 = tf.Variable(tf.zeros(shape=[1]))
 theta_D = [D_W1, D_W2, D_b1, D_b2]
 
 
-Z = tf.placeholder(tf.float32, shape=[None, 100])
+Z = tf.placeholder(tf.float32, shape=[None, 100]) #random noise
 
 G_W1 = tf.Variable(xavier_init([100, 128]))
 G_b1 = tf.Variable(tf.zeros(shape=[128]))
@@ -79,10 +79,10 @@ D_fake, D_logit_fake = discriminator(G_sample)
 
 # Alternative losses:
 # -------------------
-D_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(D_logit_real, tf.ones_like(D_logit_real)))
-D_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(D_logit_fake, tf.zeros_like(D_logit_fake)))
+D_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_real, labels=tf.ones_like(D_logit_real)))
+D_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.zeros_like(D_logit_fake)))
 D_loss = D_loss_real + D_loss_fake
-G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(D_logit_fake, tf.ones_like(D_logit_fake)))
+G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.ones_like(D_logit_fake)))
 
 D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=theta_D)
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
@@ -93,7 +93,7 @@ Z_dim = 100
 mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
 
 sess = tf.Session()
-sess.run(tf.initialize_all_variables())
+sess.run(tf.global_variables_initializer())
 
 if not os.path.exists('out/'):
     os.makedirs('out/')
@@ -116,6 +116,6 @@ for it in range(1000000):
 
     if it % 1000 == 0:
         print('Iter: {}'.format(it))
-        print('D loss: {:.4}'. format(D_loss_curr))
+        print('D loss: {:.4}'.format(D_loss_curr))
         print('G_loss: {:.4}'.format(G_loss_curr))
         print()

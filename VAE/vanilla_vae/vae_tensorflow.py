@@ -3,18 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
-from torch.autograd import Variable
+# from torch.autograd import Variable
 from tensorflow.examples.tutorials.mnist import input_data
 
 
 mnist = input_data.read_data_sets('../../MNIST_data', one_hot=True)
 mb_size = 64
 z_dim = 100
-X_dim = mnist.train.images.shape[1]
-y_dim = mnist.train.labels.shape[1]
+X_dim = mnist.train.images.shape[1] #784
+y_dim = mnist.train.labels.shape[1] #10
 h_dim = 128
 c = 0
 lr = 1e-3
+# z_dim=100
+print ("x_dim,y_dim:",X_dim,y_dim)
 
 
 def plot(samples):
@@ -38,7 +40,7 @@ def xavier_init(size):
     xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
     return tf.random_normal(shape=size, stddev=xavier_stddev)
 
-
+#initialize
 # =============================== Q(z|X) ======================================
 
 X = tf.placeholder(tf.float32, shape=[None, X_dim])
@@ -55,15 +57,15 @@ Q_b2_sigma = tf.Variable(tf.zeros(shape=[z_dim]))
 
 
 def Q(X):
-    h = tf.nn.relu(tf.matmul(X, Q_W1) + Q_b1)
-    z_mu = tf.matmul(h, Q_W2_mu) + Q_b2_mu
-    z_logvar = tf.matmul(h, Q_W2_sigma) + Q_b2_sigma
+    h = tf.nn.relu(tf.matmul(X, Q_W1) + Q_b1) #128
+    z_mu = tf.matmul(h, Q_W2_mu) + Q_b2_mu #100
+    z_logvar = tf.matmul(h, Q_W2_sigma) + Q_b2_sigma #100
     return z_mu, z_logvar
 
 
 def sample_z(mu, log_var):
     eps = tf.random_normal(shape=tf.shape(mu))
-    return mu + tf.exp(log_var / 2) * eps
+    return mu + tf.exp(log_var / 2) * eps  #biao zhun
 
 
 # =============================== P(X|z) ======================================
@@ -80,7 +82,7 @@ def P(z):
     logits = tf.matmul(h, P_W2) + P_b2
     prob = tf.nn.sigmoid(logits)
     return prob, logits
-
+#reconstruct
 
 # =============================== TRAINING ====================================
 
