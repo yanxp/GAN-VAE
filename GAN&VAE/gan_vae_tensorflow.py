@@ -117,6 +117,7 @@ Q_fake, Q_logit_fake=discriminator(Q_sample)
 
 # D_loss = -tf.reduce_mean(tf.log(D_real) + tf.log(1. - D_fake))
 # G_loss = -tf.reduce_mean(tf.log(D_fake))
+# Q_loss = -tf.reduce_mean(tf.loh(Q_fake))
 
 # Alternative losses:
 # -------------------
@@ -126,10 +127,12 @@ kl_loss = 0.5 * tf.reduce_sum(tf.exp(z_logvar) + z_mu**2 - 1. - z_logvar, 1)
 recon_loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_sample, labels=X), 1)
 
 D_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_real, labels=tf.ones_like(D_logit_real)))
-D_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.zeros_like(D_logit_fake)))
-Q_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_logit_fake,labels=tf.zeros_like(Q_logit_fake)))
+D_loss_fake_G_sample = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.zeros_like(D_logit_fake)))
+D_loss_fake_Q_sample = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_logit_fake,labels=tf.zeros_like(Q_logit_fake)))
+Q_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_logit_fake,labels=tf.ones_like(Q_logit_fake)))
+G_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.ones_like(D_logit_fake)))
 
-D_loss = D_loss_real + D_loss_fake+Q_loss_fake
+D_loss = D_loss_real + D_loss_fake_G_sample+D_loss_fake_Q_sample+Q_loss_fake+G_loss_fake
 G_loss = tf.reduce_mean(0.5*recon_loss)-D_loss
 Q_loss = tf.reduce_mean(kl_loss+recon_loss)
 # G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.ones_like(D_logit_fake)))
@@ -146,8 +149,8 @@ Z_dim = 100
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
-if not os.path.exists('out_1/'):
-    os.makedirs('out_1/')
+if not os.path.exists('out/'):
+    os.makedirs('out/')
 
 i = 0
 
@@ -156,7 +159,7 @@ for it in range(1000000):
         samples = sess.run(G_sample, feed_dict={Z: np.random.randn(16, z_dim)})
         # samples = sess.run(X_samples, feed_dict={z: np.random.randn(16, z_dim)})
         fig = plot(samples)
-        plt.savefig('out_1/{}.png'.format(str(i).zfill(3)), bbox_inches='tight')
+        plt.savefig('out/{}.png'.format(str(i).zfill(3)), bbox_inches='tight')
         i += 1
         plt.close(fig)
 
