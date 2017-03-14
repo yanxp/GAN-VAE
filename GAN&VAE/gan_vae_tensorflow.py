@@ -117,7 +117,7 @@ Q_fake, Q_logit_fake=discriminator(Q_sample)
 
 # D_loss = -tf.reduce_mean(tf.log(D_real) + tf.log(1. - D_fake))
 # G_loss = -tf.reduce_mean(tf.log(D_fake))
-# Q_loss = -tf.reduce_mean(tf.loh(Q_fake))
+
 
 # Alternative losses:
 # -------------------
@@ -127,15 +127,12 @@ kl_loss = 0.5 * tf.reduce_sum(tf.exp(z_logvar) + z_mu**2 - 1. - z_logvar, 1)
 recon_loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_sample, labels=X), 1)
 
 D_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_real, labels=tf.ones_like(D_logit_real)))
-D_loss_fake_G_sample = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.zeros_like(D_logit_fake)))
-D_loss_fake_Q_sample = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_logit_fake,labels=tf.zeros_like(Q_logit_fake)))
-Q_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=Q_logit_fake,labels=tf.ones_like(Q_logit_fake)))
+D_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.zeros_like(D_logit_fake)))
 G_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.ones_like(D_logit_fake)))
 
-D_loss = D_loss_real + D_loss_fake_G_sample+D_loss_fake_Q_sample+Q_loss_fake+G_loss_fake
+D_loss = D_loss_real +D_loss_fake+G_loss_fake
 G_loss = tf.reduce_mean(0.5*recon_loss)-D_loss
 Q_loss = tf.reduce_mean(kl_loss+recon_loss)
-# G_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logit_fake,labels=tf.ones_like(D_logit_fake)))
 
 D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=theta_D)
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
@@ -163,9 +160,10 @@ for it in range(1000000):
         i += 1
         plt.close(fig)
 
-    X_mb, _ = mnist.train.next_batch(mb_size)
-
-    _, D_loss_curr = sess.run([D_solver,D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
+    # X_mb, _ = mnist.train.next_batch(mb_size)
+    for i in xrange(15):
+        X_mb, _ = mnist.train.next_batch(mb_size)
+        _, D_loss_curr = sess.run([D_solver,D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
     _, G_loss_curr= sess.run([G_solver,G_loss], feed_dict={X:X_mb,Z: sample_Z(mb_size, Z_dim)})
     _, Q_loss_curr=sess.run([Q_solver,Q_loss],feed_dict={X: X_mb}) 
     if it % 1000 == 0:
